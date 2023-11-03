@@ -1,73 +1,7 @@
-from os import system
-from random import randint 
-import battleships_globals as g
 
-# Print the map
-def showmap(showall = False):
-    position = ""
-    # Clear map
-    system("cls")
-    # Position player labels
-    print(f"{g.PLAYER}PLAYER", " " * 79, f"{g.COMPUTER}COMPUTER") 
-    # Print top axis info
-    print(" " * 18, f"{g.PLAYER}A  B  C  D  E  F  G  H  I  J", " " * 7, f"{g.COMPUTER}A  B  C  D  E  F  G  H  I  J")
-    for i in range(0,10):
-        # Print ship name on even row
-        if (i % 2 == 0):
-            print(f"{g.PLAYER}{g.ships_player[int(i / 2)].name.upper():15}", end="")
-        # Print ship health on odd row
-        else:
-            print(f"  {g.PLAYER}Health {g.ships_player[int(i / 2)].hp}/{g.ships_player[int(i / 2)].max}"," " * 2, end = "")
-        # A little bit of space between ship info and grid
-        print(f"{i + 1:2} " , end = "")
-        # Print colorcoded player grid
-        for j in range(0,10):
-            # Unify all the ships as same symbol, if position has a ship in it
-            if g.grid_player[i * 10 + j].content in "ABCDE":
-                position = f"{g.PLAYER}O"
-            # If there has been a miss
-            elif g.grid_player[i * 10 + j].content == "x":        
-                position = f"{g.RESET}x"
-            # If ship has been hit
-            elif g.grid_player[i * 10 + j].content == "*":
-                position = f"{g.HIT}*"
-            else:
-                # If showall is true then show all the computer aiming aid spots
-                if showall == True and g.grid_player[i * 10 + j].content == 'i':
-                    position = f"{g.RESET}i"
-                # Otherwise show just ocean
-                else:
-                    position = f"{g.OCEAN} "
-            # Now print the color coded content of the grid
-            print(f"{g.OCEAN}[{position}{g.OCEAN}]", end = "")
-        # Add a little bit of space between the grids and show computer y-axis
-        print(" " * 3, f"{g.COMPUTER}{i + 1:2} " , end = "")
-        # Print color coded computer grid
-        for j in range(0,10):
-            # Show unified ship positions only if show all is true, other wise replace with ocean
-            if g.grid_computer[i * 10 + j].content in "ABCDE":
-                if showall == True:
-                    position = f"{g.COMPUTER}O"
-                else:
-                    position = f"{g.OCEAN} "    
-            # If position has been hit and missed
-            elif g.grid_computer[i * 10 + j].content == "x":        
-                position = f"{g.RESET}x"
-            # If ship found and hit
-            elif g.grid_computer[i * 10 + j].content == "*":
-                position = f"{g.HIT}*"
-            # Rest is just ocean
-            else:                
-                position = f"{g.OCEAN} "    
-            print(f"{g.OCEAN}[{position}{g.OCEAN}]", end = "")
-        # Print computer ship names on even rows
-        if (i % 2 == 0):
-            print(f"  {g.COMPUTER}{g.ships_computer[int(i / 2)].name.upper():15}", end="")
-        # Print computer ship health on odd rows
-        else:
-            if showall == True:
-                print(f"    {g.COMPUTER}Health {g.ships_computer[int(i / 2)].hp}/{g.ships_computer[int(i / 2)].max}"," " * 2, end = "")        
-        print(f"{g.RESET}")
+from random import randint 
+from battleships_interface import showmap, errormsg, endgame
+import battleships_globals as g
 
 
 
@@ -179,8 +113,7 @@ def get_position(user):
                 # Convert map coordinate to grid position
                 value = g.map_grid[position]
                 # Exit loop
-                valid = 1
-    print("value: ", value)
+                valid = 1    
     return value
 
 
@@ -222,15 +155,104 @@ def ship_placement(user, suggestions):
     return value
 
 
-# Print out error message
-def errormsg(msg):
-    print(f"ERROR! {msg}") 
-    print("Or to see grids, write (M)ap")
-    print("Or you can always stop playing by writing (Q)uit")   
+# Handle computers turn
+def turn_computer():
+    complete = 0    
+    while complete == 0:
+        # If target list is empty, get random target
+        if len(g.list_targets) == 0:
+            target = randint(0,99)
+        else:                
+            # If there more than one hits on the same ship, clear up target list
+            if len(g.list_hit) > 1:
+                # Get direction of ship
+                temp = g.list_hit[0] - g.list_hit[1]
+                if temp < 0:
+                    temp *= -1
+                if temp == 1:
+                    # East west ship
+                    for i in g.list_hit:
+                        # Remove possible north and south locations from target list
+                        if g.grid_player[i].north != -1:
+                            if g.grid_player[i].north in g.list_targets:
+                                g.list_targets.remove(g.grid_player[i].north)                                
+                        if g.grid_player[i].south != -1:
+                            if g.grid_player[i].south in g.list_targets:
+                                g.list_targets.remove(g.grid_player[i].south)                                
+                else:
+                    # North south ship
+                    for i in g.list_hit:
+                        if g.grid_player[i].west != -1:
+                            if g.grid_player[i].west in g.list_targets:
+                                g.list_targets.remove(g.grid_player[i].west)                                
+                        if g.grid_player[i].east != -1:
+                            if g.grid_player[i].east in g.list_targets:
+                                g.list_targets.remove(g.grid_player[i].east)                                
+            # Select random target from list of targets
+            rand = randint(0, len(g.list_targets) - 1)
+            target = g.list_targets[rand]
+        gridpos = g.grid_player[target].gothit("player")
+        if gridpos == False:
+            # Not a valid target, try again
+            continue
+        else:
+            # If shot hit
+            if g.grid_player[target].content == "*":
+                msg = f"Computer made a hit at {g.map_coordinate[target].upper()}"
+                # Mark location it in list_hit
+                g.list_hit.append(target)
+                # Remove location from targets
+                if target in g.list_targets:
+                    g.list_targets.remove(target)
+                # Add adjacent locations to target list if they are valid                    
+                directions = [g.grid_player[target].north, g.grid_player[target].south, g.grid_player[target].west, g.grid_player[target].east]
+                for dir in directions:
+                    if dir != -1 and dir not in g.list_targets and g.grid_player[dir].content in " ABCDE":
+                        g.list_targets.append(dir)
+                # Check if target has been destroyed (WRONG POSITION, THIS CONTENT IS ALREADY * AT THIS POINT)                                  
+                for ship in g.ships_player:
+                    if ship.grid == gridpos and ship.hp == 0:
+                        msg += f" and destroyed your {ship.name}"
+                        g.list_targets = []
+                        # Need to loop through list_hit and mark appropriate directions from there to invalid spots
+                        for target in g.list_hit:
+                            directions = [g.grid_player[target].north, g.grid_player[target].south, g.grid_player[target].west, g.grid_player[target].east]
+                            for dir in directions:
+                                if dir != -1 and g.grid_player[dir].content == " ":
+                                    g.grid_player[dir].content = "i"
+                        g.list_hit = []
+                
+            # If miss and target found in target list, target needs to be removed from list
+            else:
+                if target in g.list_targets:
+                    g.list_targets.remove(target)
+                msg = f"Computer missed at {g.map_coordinate[target].upper()}"
+            complete = 1
+            return msg
+              
 
-
-# Exit game
-def endgame():
-    showmap(True)
-    print("\nThank you for playing!\n")
-    exit()    
+# Handle players turn
+def turn_player(msg = ""):
+    value = False
+    showmap(g.DEBUG)  
+    if msg != "":
+        print(msg, "\n")             
+    print("Please enter target coordinate, (Q)uit or (M)ap")
+    target = input("> ").casefold()
+    if target in ["q", "quit", "(q)", "(q)uit"]:
+        endgame()
+    elif target in ["m", "map", "(m)", "(m)ap"]:
+        showmap(g.DEBUG)
+        value = False
+    elif target not in g.map_grid:
+        errormsg("Invalid target, please give a valid map coordinate")
+        value = False
+    else:
+        target = g.map_grid[target]
+        test = g.grid_computer[target].gothit("computer")
+        if test == False:
+            errormsg("Invalid target, please give a valid map coordinate")
+            value = False
+        else:
+            value = True
+    return value

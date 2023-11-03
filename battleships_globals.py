@@ -1,4 +1,5 @@
-DEBUG = True
+# Change this to true to see everything on maps during game play
+DEBUG = False
 
 # Hitpoints
 hp_player = 15
@@ -11,6 +12,10 @@ ships_computer = []
 # Lists to hold grid-objects
 grid_player = []
 grid_computer = []
+
+# Lists to aid in computer targeting
+list_targets = []    
+list_hit = []
 
 # Color coding:
 HIT       = "\033[1;31m" # red 
