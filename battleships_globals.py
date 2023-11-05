@@ -1,9 +1,17 @@
 # Change this to true to see everything on maps during game play
-DEBUG = False
+DEBUG = True
+
+rules = "modern"
 
 # Hitpoints
-hp_player = 15
-hp_computer = 15
+hp_player = 17
+hp_computer = 17
+# Ship hitpoints
+hp_carrier = 5
+hp_battleship = 4
+hp_cruiser = 3
+hp_submarine = 3
+hp_destroyer = 2
 
 # Lists to hold ship-objects
 ships_player = []
@@ -14,8 +22,13 @@ grid_player = []
 grid_computer = []
 
 # Lists to aid in computer targeting
-list_targets = []    
+shadow_map = set()
+list_targets = set()
 list_hit = []
+
+# Turn-counter and -log
+counter = 0
+log = dict()
 
 # Color coding:
 HIT       = "\033[1;31m" # red 

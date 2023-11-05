@@ -7,8 +7,12 @@ import battleships_functions as f
 # Initialize game loop
 game = True
 
-while game == True:
+# Play as long game is true
+while game == True:    
+    # Print title screen
     title()
+    # Reset the global variables
+    f.reset()
 
     # Create map grid for player and computer        
     for i in range(0,100):    
@@ -16,9 +20,13 @@ while game == True:
         g.grid_computer.append(o.gridPosition(i))
 
     # Create ships for player and computer
-    for i in range(5, 0, -1):
+    for i in "ABCDE":
         g.ships_player.append(o.Ship(i))
         g.ships_computer.append(o.Ship(i))
+
+    # Create shadow map to make computer aiming a bit easier
+    for i in range(0,100):
+        g.shadow_map.add(i) 
 
     # Place computers ships
     f.placeships("computer")
@@ -62,7 +70,7 @@ while game == True:
                 winner = "computer"
         # Player's turn
         else:
-            if (g.turn_player(msg) == True):
+            if (f.turn_player(msg) == True):
                 turn = 0
             else:
                 continue    

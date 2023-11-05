@@ -66,7 +66,7 @@ def showmap(showall = False):
             # Rest is just ocean
             else:                
                 position = f"{g.OCEAN} "    
-            print(f"{g.OCEAN}[{position}{g.OCEAN}]", end = "")
+            print(f"{g.OCEAN}[{position}{g.OCEAN}]", end = "")            
         # Print computer ship names on even rows
         ship = g.ships_computer[int(i /2)]
         if (i % 2 == 0):
@@ -79,7 +79,9 @@ def showmap(showall = False):
                 if ship.hp > 0:
                     print(f"    {g.COMPUTER}{ship.status.capitalize()}{g.RESET}", end = "")        
                 else:
-                    print(f"    {g.HIT}{ship.status.upper()}{g.RESET}", end = "")        
+                    print(f"    {g.HIT}{ship.status.upper()}{g.RESET}", end = "")
+        if g.counter != 0:
+                print(f"{j}: {g.log[j]}", end = "")        
         print(f"{g.RESET}")
 
 
@@ -106,8 +108,34 @@ def title():
     print("\n\tPlay a game of battleships against a computer.")
     print("\n\tDuring the game, you can print current (M)ap")
     print("\tOr you can use (Q)uit to end the game")
-    print(f"\n\tPress Enter to start{g.RESET}")
-    input()
+    print("\tType (C)hange to use different rules")
+    print(f"\n\tCurrent ruleset: {g.COMPUTER}{g.rules.capitalize()}{g.PLAYER}")
+    print(f"\n\tPress Enter to start or (C)hange ruleset{g.RESET}")
+    ruleset = input("> ").casefold()
+    if ruleset in ["c", "(c)", "change", "(c)hange"]:
+        system('cls')        
+        if g.rules == "modern":
+            g.rules = "traditional"
+            print(f"\n{g.PLAYER}Rules changed to {g.COMPUTER}Traditional{g.PLAYER}")
+            print("Carrier size is 5")
+            print("Battleship size is 4")
+            print("Cruiser size is 3")
+            print("Submarine size is 2")
+            print("Destroyer size is 1")
+        else:
+            g.rules = "modern"
+            print(f"\n{g.PLAYER}Rules changed to {g.COMPUTER}Modern{g.PLAYER}")
+            print("Carrier size is 5")
+            print("Battleship size is 4")
+            print("Cruiser size is 3")
+            print("Submarine size is 3")
+            print("Destroyer size is 2")
+        print("\nPress enter to continue")
+        input()
+        title()
+    elif ruleset in ["q", "(q)", "quit", "(q)uit"]:
+        print("\nThank you for playing!\n")
+        exit()
 
 
 # Print game over text

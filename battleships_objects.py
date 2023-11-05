@@ -73,26 +73,34 @@ class gridPosition():
 
 # Create ship object
 class Ship():
-    def __init__(self, hp) -> None:
-        self.hp = hp
-        self.max = hp
+    def __init__(self, grid) -> None:
         self.status = "active"
-        match hp:
-            case 5:
+        match grid:
+            case "A":
                 self.name = "Carrier"
                 self.grid = "A"
-            case 4:
+                self.hp = g.hp_carrier
+                self.max = g.hp_carrier
+            case "B":
                 self.name = "Battleship"
                 self.grid = "B"
-            case 3:
+                self.hp = g.hp_battleship
+                self.max = g.hp_battleship
+            case "C":
                 self.name = "Cruiser"
                 self.grid = "C"
-            case 2:
+                self.hp = g.hp_cruiser
+                self.max = g.hp_cruiser
+            case "D":
                 self.name = "Submarine"
                 self.grid = "D"
-            case 1:
+                self.hp = g.hp_submarine
+                self.max = g.hp_submarine
+            case "E":
                 self.name = "Destroyer"
                 self.grid = "E"
+                self.hp = g.hp_destroyer
+                self.max = g.hp_destroyer
     def stats(self):
         print(self.name, self.grid, self.hp, self.status)
     def hit(self):

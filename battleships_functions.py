@@ -3,6 +3,35 @@ from random import randint
 from battleships_interface import showmap, errormsg, endgame
 import battleships_globals as g
 
+# Reset global variables
+def reset():
+    if g.rules == "modern":
+        g.hp_player = 17
+        g.hp_computer = 17
+        # Ship hitpoints
+        g.hp_carrier = 5
+        g.hp_battleship = 4
+        g.hp_cruiser = 3
+        g.hp_submarine = 3
+        g.hp_destroyer = 2
+    else:
+        g.hp_player = 15
+        g.hp_computer = 15
+        # Ship hitpoints
+        g.hp_carrier = 5
+        g.hp_battleship = 4
+        g.hp_cruiser = 3
+        g.hp_submarine = 2
+        g.hp_destroyer = 1
+    g.ships_player = []
+    g.ships_computer = []
+    g.grid_player = []
+    g.grid_computer = []
+    g.shadow_map = set()
+    g.list_targets = set()
+    g.list_hit = []
+    g.counter = 0
+    g.log = dict()
 
 
 # Place ships on map
@@ -159,11 +188,11 @@ def ship_placement(user, suggestions):
 def turn_computer():
     complete = 0    
     while complete == 0:
-        # If target list is empty, get random target
+        # If target list is empty, get random target from shadow_map
         if len(g.list_targets) == 0:
-            target = randint(0,99)
+            target = list(g.shadow_map)[randint(0,len(g.shadow_map) - 1)]
         else:                
-            # If there more than one hits on the same ship, clear up target list
+            # If there more than one hits on the same ship, clean up target list
             if len(g.list_hit) > 1:
                 # Get direction of ship
                 temp = g.list_hit[0] - g.list_hit[1]
@@ -174,60 +203,72 @@ def turn_computer():
                     for i in g.list_hit:
                         # Remove possible north and south locations from target list
                         if g.grid_player[i].north != -1:
-                            if g.grid_player[i].north in g.list_targets:
-                                g.list_targets.remove(g.grid_player[i].north)                                
+                            # Remove north location from shadow map and target list
+                            g.shadow_map.discard(g.grid_player[i].north)                            
+                            g.list_targets.discard(g.grid_player[i].north)                                
                         if g.grid_player[i].south != -1:
-                            if g.grid_player[i].south in g.list_targets:
-                                g.list_targets.remove(g.grid_player[i].south)                                
+                            # Remove south location from shadow map and target list
+                            g.shadow_map.discard(g.grid_player[i].south)                            
+                            g.list_targets.discard(g.grid_player[i].south)  
                 else:
                     # North south ship
                     for i in g.list_hit:
                         if g.grid_player[i].west != -1:
-                            if g.grid_player[i].west in g.list_targets:
-                                g.list_targets.remove(g.grid_player[i].west)                                
+                            # Remove west location from shadow map and target list
+                            g.shadow_map.discard(g.grid_player[i].west)
+                            g.list_targets.discard(g.grid_player[i].west)
                         if g.grid_player[i].east != -1:
-                            if g.grid_player[i].east in g.list_targets:
-                                g.list_targets.remove(g.grid_player[i].east)                                
+                            # Remove east location from shadow map and target list
+                            g.shadow_map.discard(g.grid_player[i].east)
+                            g.list_targets.discard(g.grid_player[i].east)                                
             # Select random target from list of targets
             rand = randint(0, len(g.list_targets) - 1)
-            target = g.list_targets[rand]
+            target = list(g.list_targets)[rand]
         gridpos = g.grid_player[target].gothit("player")
         if gridpos == False:
             # Not a valid target, try again
             continue
         else:
+            # Remove location from shadow_map, so computer will not try to randomly hit it again
+            g.shadow_map.discard(target)
             # If shot hit
             if g.grid_player[target].content == "*":
                 msg = f"Computer made a hit at {g.map_coordinate[target].upper()}"
                 # Mark location it in list_hit
-                g.list_hit.append(target)
-                # Remove location from targets
-                if target in g.list_targets:
-                    g.list_targets.remove(target)
+                g.list_hit.append(target)                
+                # Remove location from targets                
+                g.list_targets.discard(target)
                 # Add adjacent locations to target list if they are valid                    
                 directions = [g.grid_player[target].north, g.grid_player[target].south, g.grid_player[target].west, g.grid_player[target].east]
                 for dir in directions:
+                    # If position in this direction is valid and is marked as ocean or as ship 
                     if dir != -1 and dir not in g.list_targets and g.grid_player[dir].content in " ABCDE":
-                        g.list_targets.append(dir)
+                        g.list_targets.add(dir)
                 # Check if target has been destroyed (WRONG POSITION, THIS CONTENT IS ALREADY * AT THIS POINT)                                  
                 for ship in g.ships_player:
                     if ship.grid == gridpos and ship.hp == 0:
+                        # Player ship has been destroyed
                         msg += f" and destroyed your {ship.name}"
-                        g.list_targets = []
+                        # Empty target list
+                        g.list_targets = set()
                         # Need to loop through list_hit and mark appropriate directions from there to invalid spots
                         for target in g.list_hit:
                             directions = [g.grid_player[target].north, g.grid_player[target].south, g.grid_player[target].west, g.grid_player[target].east]
                             for dir in directions:
+                                # If direction is valid and marked as ocean, remove value from shadow map
                                 if dir != -1 and g.grid_player[dir].content == " ":
-                                    g.grid_player[dir].content = "i"
+                                    g.shadow_map.discard(dir)
+                                    # g.grid_player[dir].content = "i"
                         g.list_hit = []
                 
-            # If miss and target found in target list, target needs to be removed from list
-            else:
-                if target in g.list_targets:
-                    g.list_targets.remove(target)
+            # If shot missed 
+            else:                
+                # If target is in target list, remove target from the list                
+                g.list_targets.discard(target)
                 msg = f"Computer missed at {g.map_coordinate[target].upper()}"
             complete = 1
+            g.counter += 1
+            g.log[g.counter] = msg
             return msg
               
 
@@ -247,12 +288,15 @@ def turn_player(msg = ""):
     elif target not in g.map_grid:
         errormsg("Invalid target, please give a valid map coordinate")
         value = False
-    else:
+    else:    
         target = g.map_grid[target]
         test = g.grid_computer[target].gothit("computer")
         if test == False:
             errormsg("Invalid target, please give a valid map coordinate")
             value = False
         else:
-            value = True
+            msg = f"Player: {test}"
+            g.counter += 1
+            g.log[g.counter] = msg
+            value = True    
     return value
