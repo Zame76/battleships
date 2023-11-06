@@ -28,13 +28,14 @@ list_hit = []
 
 # Turn-counter and -log
 counter = 0
-log = dict()
+log = []
 
-# Color coding:
+# Color coding: (search for ANSI color codes)
 HIT       = "\033[1;31m" # red 
 OCEAN     = "\033[1;34m" # blue
 COMPUTER  = "\033[1;36m" # cyan
 PLAYER    = "\033[1;32m" # green
+WHITE     = "\033[1;37m" # white
 RESET     = "\033[0;0m"  # reset to default
 
 

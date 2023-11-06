@@ -1,13 +1,22 @@
-from os import system
+from os import system, name as os_name
 import battleships_globals as g
+
+if os_name == "nt":
+    # For Windows:
+    clearscreen = "cls"
+else:
+    # For Linux 
+    clearscreen = "clear"
+
 
 # Print the map
 def showmap(showall = False):
     position = ""
     ship = ""
     target = 0
+    logno = g.counter
     # Clear map
-    system("cls")
+    system(clearscreen)
     # Position player labels
     print(f"{g.PLAYER}PLAYER", " " * 79, f"{g.COMPUTER}COMPUTER") 
     # Print top axis info
@@ -73,16 +82,30 @@ def showmap(showall = False):
             print(f"  {g.COMPUTER}{ship.name.upper():15}", end="")
         # Print computer ship health on odd rows
         else:
+            # Show active ship info only if showall is true
             if showall == True and ship.hp > 0:                
-                    print(f"    {g.COMPUTER}Health {ship.hp}/{ship.max}"," " * 2, end = "")                
+                    print(f"    {g.COMPUTER}Health {ship.hp}/{ship.max}{g.RESET}", end = "")                
+            # Otherwise, show ships status
             else:                
+                # Ship is active
                 if ship.hp > 0:
                     print(f"    {g.COMPUTER}{ship.status.capitalize()}{g.RESET}", end = "")        
+                # Ship is destroyed
                 else:
-                    print(f"    {g.HIT}{ship.status.upper()}{g.RESET}", end = "")
-        if g.counter != 0:
-                print(f"{j}: {g.log[j]}", end = "")        
-        print(f"{g.RESET}")
+                    print(f"    {g.HIT}{ship.status.upper()}{g.RESET}", end = "")  
+        print()    
+    # Show log, it there are values
+    if len(g.log) != 0:                
+        print(f"\n{g.WHITE}LOG OF LATEST EVENTS:{g.RESET}")
+    # Show only latest five entries of log
+    if g.counter < 5:
+        j = 0
+    else:
+        j = g.counter - 5
+    # Print log entries
+    for i in range(j,g.counter):
+        print(f"\tTurn {i + 1:2}: {g.log[i]}")
+    print()    
 
 
 # Print out error message
@@ -94,7 +117,7 @@ def errormsg(msg):
 
 # Print title screen
 def title():
-    system('cls')
+    system(clearscreen)
     print(f"{g.PLAYER}")
     print("\t ____        _   _   _           _     _")
     print("\t|  _ \\      | | | | | |         | |   (_)           ")
@@ -113,7 +136,7 @@ def title():
     print(f"\n\tPress Enter to start or (C)hange ruleset{g.RESET}")
     ruleset = input("> ").casefold()
     if ruleset in ["c", "(c)", "change", "(c)hange"]:
-        system('cls')        
+        system(clearscreen)        
         if g.rules == "modern":
             g.rules = "traditional"
             print(f"\n{g.PLAYER}Rules changed to {g.COMPUTER}Traditional{g.PLAYER}")

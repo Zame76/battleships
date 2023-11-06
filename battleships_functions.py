@@ -31,7 +31,7 @@ def reset():
     g.list_targets = set()
     g.list_hit = []
     g.counter = 0
-    g.log = dict()
+    g.log = []
 
 
 # Place ships on map
@@ -152,6 +152,7 @@ def ship_placement(user, suggestions):
     value = []    
     endpoint = "" 
     valid = 0
+    direction = dict()
     # Select random suggestion for computer
     if user == "computer":
         rand = randint(0,len(suggestions) - 1) 
@@ -161,23 +162,45 @@ def ship_placement(user, suggestions):
         # Loop until valid choice has been made
         while valid == 0:            
             # Get list of valid endpoint options
-            print("\nSelect end point or (C)ancel")
+            
             # Loop through suggestions and provide endpoint options
-            test = -1
-            for i in suggestions: 
-                if test != i[-1]:
-                    print(f"\t{g.map_coordinate[i[-1]].upper()}",end = "")
-                    test = i[-1]
-            endpoint = input("\n> ").casefold()
-            # If player wants to cancel this position
-            if endpoint in ["c", "cancel", "(c)", "(c)ancel"]:
-                break
-            elif endpoint not in g.map_grid:
-                errormsg("Invalid end point, please give a valid map coordinate")
-                continue
+            for suggestion in suggestions:
+                if suggestions[0] == suggestions[-1]:
+                    print("\tPress Enter to accept placement or (C)ancel")
+                    value.append(suggestion)
+                    break
+                else:
+                    print("\nSelect end point or (C)ancel")
+                    if suggestion[0] - 10 == suggestion[1]:
+                        print("\t(N)orth",end = "")
+                        direction.update({"n":suggestion[-1], "(n)":suggestion[-1], "north":suggestion[-1], "(n)orth":suggestion[-1]})            
+                    if suggestion[0] + 10 == suggestion[1]:
+                        print("\t(S)outh",end = "")
+                        direction.update({"s":suggestion[-1], "(s)":suggestion[-1], "south":suggestion[-1], "(s)outh":suggestion[-1]})
+                    if suggestion[0] - 1 == suggestion[1]:
+                        print("\t(W)est",end = "")
+                        direction.update({"w":suggestion[-1], "(w)":suggestion[-1], "west":suggestion[-1], "(w)est":suggestion[-1]})
+                    if suggestion[0] + 1 == suggestion[1]:
+                        print("\t(E)ast",end = "")                    
+                        direction.update({"e":suggestion[-1], "(e)":suggestion[-1], "east":suggestion[-1], "(e)ast":suggestion[-1]})
+            # test = -1
+            # for i in suggestions: 
+            #     if test != i[-1]:
+            #         print(f"\t{g.map_coordinate[i[-1]].upper()}",end = "")
+            #         test = i[-1]
+            while endpoint not in direction and len(value) == 0:
+                endpoint = input("\n> ").casefold()
+                # If player wants to cancel this position
+                if endpoint in ["c", "cancel", "(c)", "(c)ancel"]:
+                    break
+                # elif endpoint not in g.map_grid:
+                if endpoint not in direction:
+                    errormsg("Invalid end point, please give a valid map coordinate")
+                    continue
             else:
-                for i in suggestions:                    
-                    if i[-1] == g.map_grid[endpoint]:
+                for i in suggestions:                                        
+                    # if i[-1] == g.map_grid[endpoint]:
+                    if i[-1] == direction[endpoint] or i[-1] == value[0]:
                         value = i
                         valid = 1
                         break
@@ -233,7 +256,7 @@ def turn_computer():
             g.shadow_map.discard(target)
             # If shot hit
             if g.grid_player[target].content == "*":
-                msg = f"Computer made a hit at {g.map_coordinate[target].upper()}"
+                msg = f"{g.COMPUTER}Computer made a hit at {g.map_coordinate[target].upper()}{g.RESET}"
                 # Mark location it in list_hit
                 g.list_hit.append(target)                
                 # Remove location from targets                
@@ -248,7 +271,7 @@ def turn_computer():
                 for ship in g.ships_player:
                     if ship.grid == gridpos and ship.hp == 0:
                         # Player ship has been destroyed
-                        msg += f" and destroyed your {ship.name}"
+                        msg += f" {g.COMPUTER}and {g.HIT}destroyed{g.COMPUTER} your {g.PLAYER}{ship.name}{g.RESET}"
                         # Empty target list
                         g.list_targets = set()
                         # Need to loop through list_hit and mark appropriate directions from there to invalid spots
@@ -265,19 +288,17 @@ def turn_computer():
             else:                
                 # If target is in target list, remove target from the list                
                 g.list_targets.discard(target)
-                msg = f"Computer missed at {g.map_coordinate[target].upper()}"
+                msg = f"{g.COMPUTER}Computer missed at {g.map_coordinate[target].upper()}{g.RESET}"
             complete = 1
             g.counter += 1
-            g.log[g.counter] = msg
+            g.log.append(msg)
             return msg
               
 
 # Handle players turn
 def turn_player(msg = ""):
     value = False
-    showmap(g.DEBUG)  
-    if msg != "":
-        print(msg, "\n")             
+    showmap(g.DEBUG)                   
     print("Please enter target coordinate, (Q)uit or (M)ap")
     target = input("> ").casefold()
     if target in ["q", "quit", "(q)", "(q)uit"]:
@@ -295,8 +316,14 @@ def turn_player(msg = ""):
             errormsg("Invalid target, please give a valid map coordinate")
             value = False
         else:
-            msg = f"Player: {test}"
+            if test == True:
+                msg = f"{g.PLAYER}You missed at {g.map_coordinate[target].upper()}{g.RESET}"
+            else:
+                msg = f"{g.PLAYER}You hit enemy ship at {g.map_coordinate[target].upper()}{g.RESET}"
+                for ship in g.ships_computer:
+                    if ship.grid == test and ship.hp == 0:
+                        msg += f" {g.PLAYER}and {g.HIT}destroyed {g.COMPUTER}{ship.name.capitalize()}{g.RESET}"
             g.counter += 1
-            g.log[g.counter] = msg
+            g.log.append(msg)
             value = True    
     return value
