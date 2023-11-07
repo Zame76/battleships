@@ -1,4 +1,25 @@
+# import global variables
 import battleships_globals as g
+
+# BATTLESHIPS_OBJECTS LIST:
+#
+# Object gridPosition()                                                 - rows: 24-92
+#   - used to create the map grids with grid position info and neigboring positions
+#   - __init__(self, pos) intializes the object values
+#   - changecontent(self, char) changes the value of this grid position
+#       - char replaces current grid value
+#   - checkplacement(self, user) checks if position and it's neighbors are valid for ship placement
+#       - user determines which map grid is being checked
+#   - gothit(self, user) checks what got hit
+#       - user determines which map grid is being checked
+#       - if ship position, calls correct ship object to register the hit
+#       - changes the grid value
+#
+# Object Ship()                                                         -rows: 95-128
+#   - used to create correct ship objects
+#   - __init__(self, grid) initialize ship values by gotten grid value
+#   - hit(self) adjusts ships hp when hit and if changes status when destroyed
+
 
 # Create map grip position object
 class gridPosition():    
@@ -100,9 +121,7 @@ class Ship():
                 self.name = "Destroyer"
                 self.grid = "E"
                 self.hp = g.hp_destroyer
-                self.max = g.hp_destroyer
-    def stats(self):
-        print(self.name, self.grid, self.hp, self.status)
+                self.max = g.hp_destroyer    
     def hit(self):
         self.hp -= 1
         if self.hp == 0:

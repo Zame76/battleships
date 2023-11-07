@@ -1,12 +1,41 @@
+# Import libraries and functions
 from os import system, name as os_name
 import battleships_globals as g
 
+# Check if windows or linux for the use of correct clear screen command
 if os_name == "nt":
     # For Windows:
     clearscreen = "cls"
 else:
     # For Linux 
     clearscreen = "clear"
+
+# BATTLESHIPS_INTERFACE LIST:
+#
+# Function showmap(showall = False)                     - rows: 41-138
+#   - print color coded map grids, ship status, log information
+#   - showall has two different values, True and False (default)
+#       - true shows all the map items, including computer ship positions
+#       - usually shown at the end of the game
+#       - global variable DEBUG is usually sent in every function call
+#
+# Function errormsg(msg)                                - rows: 141-145
+#   - print custom error message with standard input info
+#   - msg is the customizable error message, which tells what went wrong
+#
+# Function title()                                      - rows: 148-191
+#   - print title screen and instructions at the start of the game
+#   - let player change the rulesets between modern and tracitional rules
+#       - show the information what eact ruleset does
+#
+# Function gameover(winner)                             - rows: 194-207
+#   - print game over screen and show who was victorious
+#   - ask if player wants to play again
+#
+# Function endgame()                                    - rows: 210-214
+#   - player has decided to stop playing in the middle of the game
+#   - print end game messages
+
 
 
 # Print the map
@@ -53,8 +82,9 @@ def showmap(showall = False):
                 # Otherwise show just ocean
                 else:
                     position = f"{g.OCEAN} "
-            # Now print the color coded content of the grid
+            # Now print the color coded content of the grid           
             print(f"{g.OCEAN}[{position}{g.OCEAN}]", end = "")
+           
         # Add a little bit of space between the grids and show computer y-axis
         print(" " * 3, f"{g.COMPUTER}{i + 1:2} " , end = "")
         # Print color coded computer grid
@@ -175,6 +205,7 @@ def gameover(winner):
     else:
         newgame = True
     return newgame
+
 
 # Exit game
 def endgame():

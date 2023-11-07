@@ -1,6 +1,12 @@
+# BATTLESHIPS_GLOBALS
+# Contains all the global variables to be used in the game
+# Also has the color code constants
+# Creates two dictionaries to map coordinates to grid positions and vice versa 
+
 # Change this to true to see everything on maps during game play
 DEBUG = True
 
+# Default rules, modern is default, traditional is the othe options
 rules = "modern"
 
 # Hitpoints
@@ -14,8 +20,8 @@ hp_submarine = 3
 hp_destroyer = 2
 
 # Lists to hold ship-objects
-ships_player = []
 ships_computer = []
+ships_player = []
 
 # Lists to hold grid-objects
 grid_player = []

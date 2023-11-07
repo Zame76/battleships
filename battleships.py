@@ -62,27 +62,33 @@ while game == True:
     while victory == 0:
         # Computer's turn
         if turn == 0:
+            # Computer made it's turn
             msg = f.turn_computer()
             turn = 1
+            # Check if computer has won
             if g.hp_player == 0:
                 # Player wins
                 victory = 1
                 winner = "computer"
         # Player's turn
         else:
-            if (f.turn_player(msg) == True):
-                turn = 0
-            else:
+            # If function returns true, player has made his turn, computer is next
+            msg = f.turn_player(msg)
+            if (msg == True):
+                turn = 0            
+            # Otherwise return value will be "error", which will be looped back in order to show player
+            else:                
                 continue    
+            # Check if player has won
             if g.hp_computer == 0:
                 # Player wins
                 victory = 1
                 winner = "player"
 
-    # Game ends
+    # Game ends, show everything in the map
     f.showmap(True)
 
-    # Print game over screen
+    # Print game over screen and ask if player wants to play again
     game = gameover(winner)
     
 print("\nThank you for playing")
