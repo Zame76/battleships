@@ -7,3 +7,4 @@ These have slightly different ship sizes
 Run battleships.py to start
 
 Created with Python 3.12.0
+in order to learn and test Python basics
