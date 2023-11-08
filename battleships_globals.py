@@ -4,7 +4,7 @@
 # Creates two dictionaries to map coordinates to grid positions and vice versa 
 
 # Change this to true to see everything on maps during game play
-DEBUG = True
+DEBUG = False
 
 # Default rules, modern is default, traditional is the othe options
 rules = "modern"
